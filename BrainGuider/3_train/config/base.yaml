@@ -1,0 +1,58 @@
+pre_train:
+  epochs: 100
+  batch_size: 8
+  lr: 1.0e-3
+  time_split_len: 16
+  device: 'cuda:4'
+  early_stop_patience_pre: 10
+  early_stop_patience: 20
+  early_stop_min_delta: 0.0
+
+train:
+  epochs: 100
+  batch_size: 8
+  lr: 1.0e-3
+  time_split_len: 16
+  device: 'cuda:3'
+  early_stop_patience_pre: 10
+  early_stop_patience: 20
+  early_stop_min_delta: 0.0
+
+encoder:
+  F_latent: 64
+  n_regions: 360
+  input_time: 8
+  output_time: 8
+  patch_size: 4
+
+decoder:
+  F_latent: 64
+  n_regions: 360
+  input_time: 8
+  output_time: 8
+  patch_size: 4
+  layer: 2
+
+
+encoder_re:
+  F_latent: 64
+  n_regions: 360
+  input_time: 8
+  output_time: 8
+  patch_size: 4
+  mask_ratio: 0.5
+
+decoder_re:
+  F_latent: 64
+  n_regions: 360
+  input_time: 8
+  output_time: 8
+  patch_size: 4
+
+PredictorHead:
+  output_time: 8
+  patch_size: 4
+  F_latent: 64
+  layers: 2
+  n_regions: 360
+  

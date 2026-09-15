@@ -1,0 +1,23 @@
+train:
+  epochs: 100
+  batch_size: 8
+  lr: 1.0e-3
+  time_split_len: 16
+  device: 'cuda:6'
+  early_stop_patience_pre: 10
+  early_stop_patience: 20
+  early_stop_min_delta: 0.0
+
+encoder_re:
+  F_latent: 64
+  n_regions: 360
+  input_time: 16
+  output_time: 16
+  patch_size: 4
+
+decoder_re:
+  F_latent: 64
+  n_regions: 360
+  input_time: 16
+  output_time: 16
+  patch_size: 4
