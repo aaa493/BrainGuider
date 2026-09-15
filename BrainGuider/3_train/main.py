@@ -67,7 +67,7 @@ parser.add_argument('--pre_model_save_dir', type=str, default="anonymous")
 args = parser.parse_args()
 
 os.makedirs(args.model_save_dir, exist_ok=True)
-project_root = os.path.dirname(os.path.dirname(__file__))  # 适用于模块化项目
+project_root = os.path.dirname(os.path.dirname(__file__))
 config_path = os.path.join(project_root, "3_train", "config", "base.yaml")
 
 with open(config_path, "r") as f:

@@ -9,7 +9,7 @@ def calculate_feature_kl_loss(student_feature, teacher_feature, tau=0.5, dim=1):
     t_prob = nn.functional.softmax(teacher_feature / tau, dim=dim)
     s_log_prob = nn.functional.log_softmax(student_feature / tau, dim=dim)
 
-    kl = nn.functional.kl_div(s_log_prob, t_prob, reduction='none')  # (B,P,D)
+    kl = nn.functional.kl_div(s_log_prob, t_prob, reduction='none')
     kl = kl.sum(dim=dim)
     loss = kl.mean() * (tau ** 2)
     return loss

@@ -43,7 +43,7 @@ class PositionalEncoding(nn.Module):
         div_term = torch.exp(
             torch.arange(0, d_model, 2, dtype=torch.float32, device=device) *
             (-torch.log(torch.tensor(10000.0, device=device)) / d_model)
-        )  # (D/2,)
+        )
 
         pe = torch.zeros(T, d_model, device=device)
         pe[:, 0::2] = torch.sin(pos.unsqueeze(1) * div_term)

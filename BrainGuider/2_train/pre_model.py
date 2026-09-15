@@ -8,16 +8,16 @@ def random_masking_tokens(x, mask_ratio, N, patch_size):
 
     if mask_ratio <= 0.0:
 
-        x_keep = x                                    # [B, L, D]
-        mask = torch.zeros(B, L, device=x.device)     # [B, L]
+        x_keep = x                                  
+        mask = torch.zeros(B, L, device=x.device)  
 
         ids_restore = torch.arange(L, device=x.device).unsqueeze(0).expand(B, -1)
-        mask_nt = mask.view(B, N, patch_number)            # [B, N, P]
-        mask_tn = mask_nt.permute(0, 2, 1).contiguous()    # [B, P, N]
+        mask_nt = mask.view(B, N, patch_number)           
+        mask_tn = mask_nt.permute(0, 2, 1).contiguous()   
         if patch_size > 1:
             mask_btn = mask_tn.repeat_interleave(patch_size, dim=1)
         else:
-            mask_btn = mask_tn                              # [B, T, N]
+            mask_btn = mask_tn                           
 
         return x_keep, mask, ids_restore, mask_btn
 
@@ -69,7 +69,7 @@ class PatchEmbedding(nn.Module):
 
     def forward(self, x):
         Batch_size, brain_region, _ = x.shape
-        out = self.proj(x)              # [B, brain_region * patch_embed, patch_number]
+        out = self.proj(x)             
         
         out = out.reshape(Batch_size, brain_region, self.patch_embed, self.patch_number).permute(0, 1, 3, 2) 
         pos = torch.arange(self.patch_number, device=x.device)
@@ -98,11 +98,11 @@ class PositionalEncoding(nn.Module):
             (-torch.log(torch.tensor(10000.0, device=device)) / d_model)
         )  # (D/2,)
 
-        pe = torch.zeros(T, d_model, device=device)  # (T, D)
-        pe[:, 0::2] = torch.sin(pos.unsqueeze(1) * div_term)  # broadcasting: (T, 1) * (D/2)
+        pe = torch.zeros(T, d_model, device=device)  
+        pe[:, 0::2] = torch.sin(pos.unsqueeze(1) * div_term)  
         pe[:, 1::2] = torch.cos(pos.unsqueeze(1) * div_term)
 
-        return pe  # (T, D)
+        return pe 
 
 
 class TemporalTransformerLayer(nn.Module):
@@ -125,10 +125,10 @@ class TemporalTransformerLayer(nn.Module):
     def forward(self, X):
         B, T, F_latent = X.shape
         pos = torch.arange(T, device=X.device)
-        pos_encoding = self.pos_encoder(pos).unsqueeze(0)  # (1, T, F_latent)
+        pos_encoding = self.pos_encoder(pos).unsqueeze(0) 
         X = X + pos_encoding
 
-        X_out = self.transformer(X) # [B, T, F_latent]
+        X_out = self.transformer(X)
 
         return X_out
 
@@ -161,8 +161,8 @@ class pre_encoderModel(nn.Module):
 
         tokens_keep, mask, ids_restore, mask_btn = random_masking_tokens(
             tokens, mask_ratio=mask_ratio, N=self.N, patch_size=self.patch_size,
-        )  # tokens_keep: [B, L_keep, F]
-        z = self.TemporalLayer(tokens_keep)  # [B, L_keep, F_latent]
+        )  
+        z = self.TemporalLayer(tokens_keep) 
 
         aux = {
             "tokens": tokens,
@@ -214,11 +214,11 @@ class pre_decoderModel(nn.Module):
             x_, dim=1, index=ids_restore.unsqueeze(-1).expand(-1, -1, F_latent)
         )
 
-        x_dec_0 = self.DecoderLayer(x_)                       # [B, L_full, F]
-        x_dec = x_dec_0.view(B, self.N, self.L_in, F_latent)         # [B, N, L_in, F]
+        x_dec_0 = self.DecoderLayer(x_)                      
+        x_dec = x_dec_0.view(B, self.N, self.L_in, F_latent)        
 
-        x_time = self.token_to_time(x_dec).reshape(B, self.N, self.L_in *self.patch_size)      # [B, N, L_in, self.T_out]
-        out = x_time.transpose(1, 2)                        # [B, T_out(=L_in), N]
+        x_time = self.token_to_time(x_dec).reshape(B, self.N, self.L_in *self.patch_size)   
+        out = x_time.transpose(1, 2)                     
 
         return out, x_dec_0
 
