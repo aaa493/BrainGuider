@@ -1,11 +1,8 @@
-
 import torch
 import torch.nn as nn
 from tqdm import tqdm
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
-import os
-from datetime import datetime
+
 
 
 def compute_metrics(y_true, y_pred):
@@ -197,10 +194,7 @@ def train_H(
         pre_model_path,
 ):
 
-    run_dir = f"anonymous/exp1_{task_name}/run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    writer = SummaryWriter(log_dir=run_dir)
     device = config['train']['device']
-
     encoder_pred = encoderModel_pred(config['encoder']).to(device)
     decoder_pred = decoderModel_pred(config['decoder']).to(device)
 
@@ -292,13 +286,6 @@ def train_H(
             epoch_loss_pred_X_t1 += loss_pred_X_t1.item()
             epoch_loss_align_z += loss_align_dec.item()
 
-        num_batches = len(train_dataloader)
-        avg_epoch_pred_X_t1 = epoch_loss_pred_X_t1 / num_batches
-        avg_epoch_loss_align_z = epoch_loss_align_z / num_batches
-
-        writer.add_scalar("Train/loss_pred_X_t1_MSE", avg_epoch_pred_X_t1, epoch)
-        writer.add_scalar("Train/loss_align_z_MSE", avg_epoch_loss_align_z, epoch)
-
         with torch.no_grad():
             total_metrics_h2 = evaluate(
                 encoder_pred,
@@ -314,23 +301,7 @@ def train_H(
                 alpha=alpha,
             )
 
-        val_mae  = total_metrics_h2["MAE"]
         val_mse  = total_metrics_h2["MSE"]
-        val_mape = total_metrics_h2["MAPE"]
-        val_r2   = total_metrics_h2["R2"]
-        val_corr = total_metrics_h2["CORR"]
-        val_align= total_metrics_h2["loss_align_z"]
-        val_pred_X_t1= total_metrics_h2["loss_pred_X_t1"]
-
-
-        writer.add_scalar("Val/X_t1_MAE",   val_mae,  epoch)
-        writer.add_scalar("Val/X_t1_MSE",   val_mse,  epoch)
-        writer.add_scalar("Val/X_t1_MAPE",  val_mape, epoch)
-        writer.add_scalar("Val/X_t1_R2",    val_r2,   epoch)
-        writer.add_scalar("Val/X_t1_CORR",  val_corr, epoch)
-        writer.add_scalar("Val/align_z",     val_align, epoch)
-        writer.add_scalar("Val/val_pred_X_t1",     val_pred_X_t1, epoch)
-        
         if best_val_mse is None or (best_val_mse - val_mse) > min_delta:
             best_val_mse = val_mse
             bad_epochs = 0
@@ -349,6 +320,5 @@ def train_H(
 
         if bad_epochs >= patience:
             break
-
-    writer.close()
+        
     return best_model

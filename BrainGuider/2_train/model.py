@@ -13,9 +13,7 @@ class PatchEmbedding(nn.Module):
         self.patch_embed = patch_embed
         self.Time_len = Time_len
 
-        assert Time_len % patch_size == 0, "Time length must be divisible by patch size"
         self.patch_number = (self.Time_len-self.patch_size) // self.patch_size + 1
-
         self.proj = nn.Conv1d(in_channels=self.brain_region, 
                               out_channels=self.brain_region * self.patch_embed, 
                               kernel_size=self.patch_size, 

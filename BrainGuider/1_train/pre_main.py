@@ -55,8 +55,6 @@ def result_print_and_save(metrics_list, save_dir, name):
 
 
 parser = argparse.ArgumentParser()
-
-
 task_list = ["REST1", "Emotion", "Gambling", "Language", "Motor", "Nback", "Relation", "Social"]
 
 task_id = 0
@@ -64,10 +62,8 @@ task_name = task_list[task_id]
 time_chunk_length = 16
 
 data_dir_s100 = "anonymous"
-data_dir_s100 = os.path.join(data_dir_s100, f"{task_name}_chunks_len{time_chunk_length}")
-
-parser.add_argument('--data_dir_s100', type=str, default=data_dir_s100, help='data_dir_s100')
-parser.add_argument('--pre_model_save_dir', type=str, default="anonymous/%s" % task_name, help='model save dir')
+parser.add_argument('--data_dir_s100', type=str, default="anonymous")
+parser.add_argument('--pre_model_save_dir', type=str, default="anonymous")
 args = parser.parse_args()
 
 os.makedirs(args.pre_model_save_dir, exist_ok=True)
@@ -108,9 +104,8 @@ for i in range(5):
         best_model = best_model,
         test_dataloader = dataloader_test,
     )
-
+    
     metrics_list.append(total_metrics)
-
     save_path = os.path.join(args.pre_model_save_dir, f"train_1_best_model_%s.pt" % (i+1))
     torch.save(best_model, save_path)
 

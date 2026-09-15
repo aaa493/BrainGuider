@@ -66,7 +66,6 @@ def evaluate(
 
     encoder_re.eval()
     decoder_re.eval()
-
     criterion = nn.MSELoss(reduction='none')
 
     total_val_loss = 0.0
@@ -82,11 +81,9 @@ def evaluate(
             diff = criterion(recon_n, X)
             masked_diff = diff * inv_mask
             loss_val = masked_diff.sum() / (inv_mask.sum() + 1e-5)
-
             m = compute_metrics(y_true=X, y_pred=recon_n)
 
             total_val_loss += loss_val
-
             for key in metrics_sums.keys():
                 metrics_sums[key] += m[key]
 
@@ -105,11 +102,8 @@ def pre_train_model(
         train_dataloader,
         val_dataloader,
 ):
-    run_dir = f"anonymous/exp1_{task_name}/run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
-    writer = SummaryWriter(log_dir=run_dir)
     device = config['train']['device']
-
     encoder_re = encoderModel(config['encoder_re']).to(device)
     decoder_re = decoderModel(config['decoder_re']).to(device)
 
@@ -130,12 +124,10 @@ def pre_train_model(
     bad_epochs = 0
 
     num_epochs = config['train']['epochs']
-
     for epoch in tqdm(range(num_epochs), desc="Epochs", position=0, leave=False):
 
         encoder_re.train()
         decoder_re.train()
-
         epoch_loss_re = 0.0
         
         for X in tqdm(train_dataloader, desc="Batches", position=1, leave=False):
@@ -158,11 +150,7 @@ def pre_train_model(
 
             total_loss.backward()
             opt_re.step()
-
             epoch_loss_re += total_loss.item()
-
-        avg_epoch_loss_re = epoch_loss_re / len(train_dataloader)
-        writer.add_scalar("pre_Train/loss_re_MSE", avg_epoch_loss_re, epoch)
 
         with torch.no_grad():
             total_metrics = evaluate(
@@ -172,39 +160,21 @@ def pre_train_model(
                 device,
             )
 
-        val_mae  = total_metrics["MAE"]
         val_mse  = total_metrics["MSE"]
-        val_mape = total_metrics["MAPE"]
-        val_r2   = total_metrics["R2"]
-        val_corr = total_metrics["CORR"]
-
-        val_loss_re = total_metrics["loss_re"]
-
-        writer.add_scalar("pre_Train_val/Val_MAE",  val_mae,  epoch)
-        writer.add_scalar("pre_Train_val/Val_MSE",  val_mse,  epoch)
-        writer.add_scalar("pre_Train_val/Val_MAPE", val_mape, epoch)
-        writer.add_scalar("pre_Train_val/Val_R2",   val_r2,   epoch)
-        writer.add_scalar("pre_Train_val/Val_CORR", val_corr, epoch)
-        writer.add_scalar("pre_Train_val/Val_loss_re", val_loss_re, epoch)
-
         if best_val_mse is None or (best_val_mse - val_mse) > min_delta:
             best_val_mse = val_mse
             bad_epochs = 0
-
             best_model = {
                 'epoch': epoch + 1,
                 'encoder_re_state_dict': encoder_re.state_dict(),
                 'decoder_re_state_dict': decoder_re.state_dict(),
             }
-            print(f"[✔] New best model at epoch {epoch+1}, Val_MSE={best_val_mse:.4f}")
         else:
             bad_epochs += 1
 
         if bad_epochs >= patience:
-            print(f"Early stopping triggered at epoch {epoch}")
             break
 
-    writer.close()
     return best_model
 
 
@@ -229,5 +199,3 @@ def test_pre_model(
                              device)
     
     return total_metrics
-
-

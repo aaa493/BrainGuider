@@ -55,10 +55,7 @@ class PatchEmbedding(nn.Module):
         self.brain_region = brain_region
         self.patch_embed = patch_embed
         self.Time_len = Time_len
-
-        assert Time_len % patch_size == 0, "Time length must be divisible by patch size"
         self.patch_number = (self.Time_len-self.patch_size) // self.patch_size + 1
-
         self.proj = nn.Conv1d(in_channels=self.brain_region, 
                               out_channels=self.brain_region * self.patch_embed, 
                               kernel_size=self.patch_size, 
@@ -109,9 +106,7 @@ class TemporalTransformerLayer(nn.Module):
     def __init__(self, F_latent, num_layers, num_heads, dropout):
         super(TemporalTransformerLayer, self).__init__()
         self.F_latent = F_latent
-
         self.pos_encoder = PositionalEncoding(d_model=F_latent)
-
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=F_latent,
             nhead=num_heads,
